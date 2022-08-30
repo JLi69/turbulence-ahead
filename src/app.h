@@ -7,6 +7,20 @@
 #include "GL/shader.h"
 #include "gameobject/plane.h"
 
+#define NUM_OF_MESSAGES 8
+
+enum Message
+{
+	VISITED1,
+	VISITED2,
+	VISITED3,
+	VISITED4,
+	VISITED5,
+	WIN,
+	LOSE,
+	NONE
+};
+
 class App
 {
 	GLFWwindow* mWindow;
@@ -16,7 +30,11 @@ class App
 	Shader mDefaultShader;
 	GLBufferObj* mSquare;
 	unsigned int mTexture;
-	
+
+	bool mPaused = false;
+	unsigned int mMessageTextures[NUM_OF_MESSAGES];
+	Message mMessageType = NONE;
+
 	//Player plane
 	Plane mPlayer = Plane(500.0f, 500.0f, 0.0f);
 

@@ -99,12 +99,60 @@ void World::generateWorld()
 		}
 	}
 
+	//Randomly place trees around the world
 	for(int i = 0; i < WORLD_SIZE; i++)
-	{	
 		for(int j = 0; j < WORLD_SIZE; j++)
-		{
 			if(rand() % 32 == 0 && mTiles[i][j] == LAND)
 				mTiles[i][j] = TREE;
+
+	//Place the cities
+	//Starting city
+	mTiles[WORLD_SIZE / 2][WORLD_SIZE / 2] = CITY;
+	//Clear out the region near the city
+	for(int i = WORLD_SIZE / 2 - 4; i <= WORLD_SIZE / 2 + 4; i++)	
+		for(int j = WORLD_SIZE / 2 - 4; j <= WORLD_SIZE / 2 + 4; j++)
+			if((i - WORLD_SIZE / 2) * (i - WORLD_SIZE / 2) + (j - WORLD_SIZE / 2) * (j - WORLD_SIZE / 2) <= 16 &&
+				mTiles[i][j] != CITY)
+				mTiles[i][j] = LAND;	
+	
+	std::vector<std::pair<int, int>> cityLocations;
+	cityLocations.push_back({ WORLD_SIZE / 2, WORLD_SIZE / 2 });
+
+	//Place the other cities
+	for(int i = 0; i < CITY_COUNT - 1; i++)
+	{
+		int cityX = rand() % WORLD_SIZE, cityY = rand() % WORLD_SIZE;
+
+		bool foundValidLocation = false;
+		while(!foundValidLocation)
+		{	
+			foundValidLocation = true;	
+			//Make sure the city isn't too close to other cities	
+			for(auto city : cityLocations)
+			{	
+				if(abs(city.first - cityX) <= 4 && abs(city.second - cityY) <= 4)
+				{	
+					foundValidLocation = false;
+					cityX = rand() % WORLD_SIZE;
+					cityY = rand() % WORLD_SIZE;
+					break;
+				}
+			}
+		}
+		mCities.push_back({ cityX, cityY });	
+		cityLocations.push_back({ cityX, cityY });
+
+		mTiles[cityY][cityX] = CITY;	
+		for(int j = cityX - 4; j <= cityX + 4; j++)	
+		{	
+			for(int k = cityY - 4; k <= cityY + 4; k++)
+			{
+				if(j < 0 || j >= WORLD_SIZE || k < 0 || k >= WORLD_SIZE)
+					continue;
+				if((j - cityX) * (j - cityX) + (k - cityY) * (k - cityY) <= 16 &&
+					mTiles[k][j] != CITY)
+					mTiles[k][j] = LAND;
+			}
 		}
 	}
 }

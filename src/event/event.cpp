@@ -15,7 +15,18 @@ void EventHandler::handleWinResize(GLFWwindow *win, int newWidth, int newHeight)
 void EventHandler::handleKeyInput(GLFWwindow *win, int key, int scancode, int action, int mods)
 {
 	if(action == GLFW_PRESS)
+	{
+		//Override other keys
+		switch(key)
+		{
+		case GLFW_KEY_LEFT: mKeyPressed[GLFW_KEY_RIGHT] = false; break;	
+		case GLFW_KEY_RIGHT: mKeyPressed[GLFW_KEY_LEFT] = false; break;	
+		case GLFW_KEY_UP: mKeyPressed[GLFW_KEY_DOWN] = false; break;	
+		case GLFW_KEY_DOWN: mKeyPressed[GLFW_KEY_UP] = false; break;
+		}
+
 		mKeyPressed[key] = true;
+	}	
 	else if(action == GLFW_RELEASE)
 		mKeyPressed[key] = false;
 }

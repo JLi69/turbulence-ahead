@@ -9,3 +9,16 @@ World::World(unsigned int seed)
 
 World::World()
 { }
+
+std::pair<int, int> World::getCurrentGoal()
+{
+	return mCities.at(mCurrentGoal);
+}
+
+bool World::updateGoal()
+{
+	if(mCurrentGoal == mCities.size() - 1)
+		return true; //Player won the game
+	mCurrentGoal++;
+	return false;
+}

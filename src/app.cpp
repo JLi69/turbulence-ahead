@@ -52,12 +52,18 @@ void App::init()
 	mDefaultShader = Shader("res/shaders/vert.glsl", "res/shaders/frag.glsl");
 	mSquare = createSquare();
 	mTexture = loadTexture("res/textures/textures.png");
+
+	mMessageTextures[VISITED1] = loadTexture("res/textures/visited1.png");
+	mMessageTextures[VISITED2] = loadTexture("res/textures/visited2.png");
+	mMessageTextures[VISITED3] = loadTexture("res/textures/visited3.png");
+	mMessageTextures[VISITED4] = loadTexture("res/textures/visited4.png");
+	mMessageTextures[VISITED5] = loadTexture("res/textures/visited5.png");
+	mMessageTextures[WIN] = loadTexture("res/textures/visited6.png");
 }
 
 void App::run()
 {
 	bindGLObj(mSquare);
-	activateTexture(mTexture, GL_TEXTURE0);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -79,7 +85,6 @@ void App::run()
 		end = std::chrono::system_clock::now();
 		std::chrono::duration<float> frameDuration =  end - start;
 		timePassed = frameDuration.count();
-		std::cout << "FPS: " << 1.0f / timePassed << '\n';
 		start = std::chrono::system_clock::now();	
 	}
 	glfwTerminate();

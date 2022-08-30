@@ -46,6 +46,11 @@ void World::displayWorld(float cameraX, float cameraY, Shader shader, float time
 				case TREE:
 					glUniform2f(shader.getUniformLocation("uTexOffset"),
 								1.0f / 16.0f, 15.0f / 16.0f);
+					break;
+				case CITY:
+					glUniform2f(shader.getUniformLocation("uTexOffset"),
+								5.0f / 16.0f, 15.0f / 16.0f);
+					break;	
 				default:
 					break;
 				}

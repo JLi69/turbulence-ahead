@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.11)
 
+if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
+	set(CMAKE_CXX_FLAGS "-O2")	
+else()
+	set(CMAKE_CXX_FLAGS "-O2")
+endif()
+
 #project name
 project(olc-jam-2022)
 
