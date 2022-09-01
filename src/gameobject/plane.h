@@ -10,7 +10,7 @@ class Plane
 	float mX, mY; //Position of the plane
 	float mSpeed; //Speed of the plane
 	float mAcceleration;
-	float mRotation; //Rotation of the planet
+	float mRotation; //Rotation of the plane
 	float mRotationSpeed = 0.0f;	
 	float mFuel = 100.0f;
 

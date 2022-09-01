@@ -13,9 +13,9 @@ class World
 	{
 		LAND,
 		WATER,
-		MOUNTAIN,
 		TREE,
 		CITY,
+		SAND,
 		NONE
 	};
 

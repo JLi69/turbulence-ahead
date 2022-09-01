@@ -6,6 +6,7 @@
 class EventHandler
 {
 	std::map<int, bool> mKeyPressed;	
+	std::map<int, bool> mKeyTapped;
 
 	void handleWinResize(GLFWwindow *win, int newWidth, int newHeight);
 	void handleKeyInput(GLFWwindow *win, int key, int scancode, int action, int mods);	
@@ -13,6 +14,7 @@ class EventHandler
 public:
 	void setCallback(GLFWwindow *win);
 	bool keyPressed(int key);
+	bool keyTapped(int key);
 
 	static EventHandler* get();
 };

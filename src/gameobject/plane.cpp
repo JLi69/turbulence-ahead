@@ -45,6 +45,8 @@ float Plane::getWindAngle()
 void Plane::updateWindSpeed()
 {
 	mWindSpeed += 0.5f;
+	if(mWindSpeed > 2.0f)
+		mWindSpeed = 2.0f;
 }
 
 void Plane::updateWindAngle(int goalX, int goalY)
@@ -102,11 +104,11 @@ void Plane::move(float timePassed)
 	if((angle > 0.0f && angle < PI) && (mRotation < angle || mRotation > clampAngle(angle + PI)) ||
 	   (angle >= PI && angle <= 2 * PI) && (mRotation > minAngle && mRotation < maxAngle))
 	{
-		mRotation += mWindSpeed * 0.1f * timePassed;
+		mRotation += mWindSpeed * 0.2f * timePassed;
 	}
 	else
 	{	
-		mRotation -= mWindSpeed * 0.1f * timePassed;
+		mRotation -= mWindSpeed * 0.2f * timePassed;
 	}
 }
 

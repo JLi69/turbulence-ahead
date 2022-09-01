@@ -15,7 +15,7 @@ void World::displayWorld(float cameraX, float cameraY, Shader shader, float time
 
 	//Draw each tile		
 	Tile prevTile = NONE;
-	for(int i = (int)cameraY - 600.0f / TILE_SIZE; i < (int)cameraY + 600.0f / TILE_SIZE; i++)
+	for(int i = (int)cameraY - 700.0f / TILE_SIZE; i < (int)cameraY + 700.0f / TILE_SIZE; i++)
 	{
 		for(int j = (int)cameraX - 1050.0f / TILE_SIZE; j < (int)cameraX + 1050.0f / TILE_SIZE; j++)
 		{
@@ -39,7 +39,7 @@ void World::displayWorld(float cameraX, float cameraY, Shader shader, float time
 						glUniform2f(shader.getUniformLocation("uTexOffset"),
 									4.0f / 16.0f, 15.0f / 16.0f);	
 					break;
-				case MOUNTAIN:
+				case SAND:
 					glUniform2f(shader.getUniformLocation("uTexOffset"),
 								2.0f / 16.0f, 15.0f / 16.0f);	
 					break;

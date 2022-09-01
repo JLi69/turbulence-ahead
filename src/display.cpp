@@ -9,7 +9,55 @@ void App::display(float timePassed)
 	mDefaultShader.use();
 	glClear(GL_COLOR_BUFFER_BIT);		
 
+	int winWidth, winHeight;
+	glfwGetWindowSize(mWindow, &winWidth, &winHeight);
 
+	//Draw the title
+	if(mState == MENU)
+	{				
+		//Title	
+		activateTexture(mTitle, GL_TEXTURE0);
+		glUniform1f(mDefaultShader.getUniformLocation("uDarkness"), 1.0f);	
+		glUniform1f(mDefaultShader.getUniformLocation("uTexFrac"), 1.0f);
+		glUniform2f(mDefaultShader.getUniformLocation("uTexOffset"), 0.0f, 0.0f);
+		glUniform2f(mDefaultShader.getUniformLocation("uTexSize"), 128.0f, 72.0f);
+		glUniform1f(mDefaultShader.getUniformLocation("uRotation"), 0.0f);
+		glUniform2f(mDefaultShader.getUniformLocation("uScale"), 960.0f, 540.0f);
+		glUniform2f(mDefaultShader.getUniformLocation("uOffset"), 0.0f, 0.0f);
+		glDrawArrays(GL_TRIANGLES, 0, 6);				
+	
+		//Selected
+		activateTexture(mTexture, GL_TEXTURE0);
+		glUniform1f(mDefaultShader.getUniformLocation("uTexFrac"), 1.0f / 16.0f);
+		glUniform2f(mDefaultShader.getUniformLocation("uTexOffset"), 0.0f / 16.0f, 10.0f / 16.0f);	
+		glUniform2f(mDefaultShader.getUniformLocation("uTexSize"), 256.0f, 256.0f);
+		glUniform2f(mDefaultShader.getUniformLocation("uScale"), 64.0f, 64.0f);
+		glUniform2f(mDefaultShader.getUniformLocation("uOffset"), -40.0f, -90.0f - mSelected * 90.0f);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		getGLErrors();
+
+		return;
+	}
+	//Draw the credits creen
+	else if(mState == CREDITS)
+	{
+		activateTexture(mCredits, GL_TEXTURE0);
+		glUniform1f(mDefaultShader.getUniformLocation("uDarkness"), 1.0f);	
+		glUniform1f(mDefaultShader.getUniformLocation("uTexFrac"), 1.0f);
+		glUniform2f(mDefaultShader.getUniformLocation("uTexOffset"), 0.0f, 0.0f);
+		glUniform2f(mDefaultShader.getUniformLocation("uTexSize"), 128.0f, 72.0f);
+		glUniform1f(mDefaultShader.getUniformLocation("uRotation"), 0.0f);
+		glUniform2f(mDefaultShader.getUniformLocation("uScale"), 960.0f, 540.0f);
+		glUniform2f(mDefaultShader.getUniformLocation("uOffset"), 0.0f, 0.0f);
+		glDrawArrays(GL_TRIANGLES, 0, 6);	
+		
+		getGLErrors();
+
+		return;
+	}
+
+	glUniform1f(mDefaultShader.getUniformLocation("uDarkness"), 1.0f - 0.2f * mWeather);
 	glUniform2f(mDefaultShader.getUniformLocation("uTexSize"), 256.0f, 256.0f);
 	activateTexture(mTexture, GL_TEXTURE0);
 	
@@ -20,12 +68,21 @@ void App::display(float timePassed)
 						mDefaultShader,
 						timePassed);
 
+	//Draw the tornadoes	
+	glUniform2f(mDefaultShader.getUniformLocation("uScale"), 96.0f, 96.0f);
+	for(auto tornado : mTorandoes)
+		tornado.draw(mDefaultShader, mPlayer.getX(), mPlayer.getY());
 
 	//Draw the player
 	mPlayer.draw(mDefaultShader);
 
-	int winWidth, winHeight;
-	glfwGetWindowSize(mWindow, &winWidth, &winHeight);	
+	//Draw the clouds	
+	glUniform1f(mDefaultShader.getUniformLocation("uRotation"), 0.0f);	
+	glUniform2f(mDefaultShader.getUniformLocation("uScale"), 96.0f, 96.0f);
+	for(auto cloud : mClouds)
+		cloud.draw(mDefaultShader, mPlayer.getX(), mPlayer.getY());	
+	
+	glUniform1f(mDefaultShader.getUniformLocation("uDarkness"), 1.0f);	
 	//Speedometer
 	glUniform1f(mDefaultShader.getUniformLocation("uRotation"), 0.0f);
 	glUniform2f(mDefaultShader.getUniformLocation("uScale"), 120.0f, 120.0f);
@@ -36,8 +93,8 @@ void App::display(float timePassed)
 	glUniform2f(mDefaultShader.getUniformLocation("uOffset"), -winWidth / 2.0f + 100.0f, -winHeight / 2.0f + 30.0f);
 	glUniform1f(mDefaultShader.getUniformLocation("uRotation"), 
 			3.1415926535f * (mPlayer.getSpeed() - MIN_SPEED) / (MAX_SPEED - MIN_SPEED));	
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-
+	glDrawArrays(GL_TRIANGLES, 0, 6);	
+	
 	//Fuel meter
 	glUniform1f(mDefaultShader.getUniformLocation("uRotation"), 0.0f);
 	glUniform2f(mDefaultShader.getUniformLocation("uTexOffset"), 6.0f / 16.0f, 14.0f / 16.0f);
@@ -49,15 +106,22 @@ void App::display(float timePassed)
 			3.1415926535f * mPlayer.getFuel() / 100.0f);	
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
-	//Wind direction
+	//Wind direction and strength
 	glUniform1f(mDefaultShader.getUniformLocation("uRotation"), 0.0f);
 	glUniform2f(mDefaultShader.getUniformLocation("uTexOffset"), 5.0f / 16.0f, 14.0f / 16.0f);
 	glUniform2f(mDefaultShader.getUniformLocation("uOffset"), -winWidth / 2.0f + 240.0f, -winHeight / 2.0f + 90.0f);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
-	glUniform2f(mDefaultShader.getUniformLocation("uScale"), mPlayer.getWindSpeed() * 40.0f, mPlayer.getWindSpeed() * 40.0f);
+	glUniform2f(mDefaultShader.getUniformLocation("uScale"), mPlayer.getWindSpeed() * 60.0f, mPlayer.getWindSpeed() * 60.0f);
 	glUniform2f(mDefaultShader.getUniformLocation("uTexOffset"), 3.0f / 16.0f, 14.0f / 16.0f);
 	glUniform2f(mDefaultShader.getUniformLocation("uOffset"), -winWidth / 2.0f + 240.0f, -winHeight / 2.0f + 90.0f);
 	glUniform1f(mDefaultShader.getUniformLocation("uRotation"), -mPlayer.getWindAngle());	
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	//Weather report
+	glUniform1f(mDefaultShader.getUniformLocation("uRotation"), 0.0f);
+	glUniform2f(mDefaultShader.getUniformLocation("uScale"), 80.0f, 80.0f);
+	glUniform2f(mDefaultShader.getUniformLocation("uTexOffset"), (float)mWeather / 16.0f, 13.0f / 16.0f);
+	glUniform2f(mDefaultShader.getUniformLocation("uOffset"), -winWidth / 2.0f + 70.0f, winHeight / 2.0f - 60.0f);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
 	//Arrow to point to the next goal

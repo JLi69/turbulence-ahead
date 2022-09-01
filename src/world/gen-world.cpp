@@ -90,12 +90,11 @@ void World::generateWorld()
 			//Water
 			if(value < 0.1f)
 				mTiles[i][j] = WATER;
+			else if(value < 0.15f)
+				mTiles[i][j] = SAND;
 			//Land
-			else if(value < 0.4f)
+			else if(value < 1.0f)
 				mTiles[i][j] = LAND;
-			//Mountain
-			else if(value <= 1.0f)
-				mTiles[i][j] = MOUNTAIN;
 		}
 	}
 

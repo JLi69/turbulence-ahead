@@ -10,6 +10,9 @@
 App::App()
 { 
 	mLevel = World(time(NULL));
+	//Create the clouds	
+	for(int i = 0; i < 40; i++)
+		mClouds.push_back(Cloud((float)rand() / (float)RAND_MAX * 100.0f + 450.0f, (float)rand() / (float)RAND_MAX * 100.0f + 450.0f, 0.5f, NORMAL)); 	
 }
 
 App::~App()
@@ -31,7 +34,7 @@ void App::init()
 	}
 
 	//Attempt to create the window
-	mWindow = glfwCreateWindow(960, 540, "One Lone Coder 2022 CodeJam", NULL, NULL);
+	mWindow = glfwCreateWindow(960, 540, "Turbulence Ahead!", NULL, NULL);
 	//Check if window creation failed
 	if(!mWindow)
 	{
@@ -52,6 +55,8 @@ void App::init()
 	mDefaultShader = Shader("res/shaders/vert.glsl", "res/shaders/frag.glsl");
 	mSquare = createSquare();
 	mTexture = loadTexture("res/textures/textures.png");
+	mTitle = loadTexture("res/textures/title.png");
+	mCredits = loadTexture("res/textures/credits.png");
 
 	mMessageTextures[VISITED1] = loadTexture("res/textures/visited1.png");
 	mMessageTextures[VISITED2] = loadTexture("res/textures/visited2.png");
@@ -74,6 +79,7 @@ void App::run()
 		std::chrono::system_clock::now();
 	std::chrono::time_point<std::chrono::system_clock> end;
 	float timePassed = 0.0f;
+	glClearColor(0.0f, 0.67f, 1.0f, 1.0f);
 	while(!glfwWindowShouldClose(mWindow))
 	{
 		display(timePassed);	
