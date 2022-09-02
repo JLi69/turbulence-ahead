@@ -110,6 +110,9 @@ void Plane::move(float timePassed)
 	{	
 		mRotation -= mWindSpeed * 0.2f * timePassed;
 	}
+
+	if(mFuel < 0.0f)
+		mFuel = 0.0f;
 }
 
 void Plane::draw(Shader shader)

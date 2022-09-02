@@ -2,7 +2,9 @@
 #include <vector>
 #include "../GL/shader.h"
 
-#define WORLD_SIZE 1000
+#define WORLD_SIZE 1500
+#define CITY_MIN 400
+#define CITY_MAX 1100
 #define GRID_SIZE 50
 #define TILE_SIZE 48.0f
 #define CITY_COUNT 7
@@ -19,7 +21,7 @@ class World
 		NONE
 	};
 
-	Tile mTiles[WORLD_SIZE][WORLD_SIZE];
+	Tile** mTiles;
 	unsigned int mSeed = 0;
 	std::vector<unsigned int> mPermutation;
 
@@ -48,6 +50,7 @@ public:
 
 	World(unsigned int seed);
 	World();
+	~World();
 };
 
 #define WORLD_H

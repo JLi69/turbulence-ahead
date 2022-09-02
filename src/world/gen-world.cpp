@@ -78,6 +78,10 @@ void World::createPermutation()
 
 void World::generateWorld()
 {
+	mTiles = new Tile*[WORLD_SIZE];	
+	for(int i = 0; i < WORLD_SIZE; i++)
+		mTiles[i] = new Tile[WORLD_SIZE];
+
 	//Generate the world using perlin noise
 	for(int i = 0; i < WORLD_SIZE; i++)
 	{
@@ -120,7 +124,8 @@ void World::generateWorld()
 	//Place the other cities
 	for(int i = 0; i < CITY_COUNT - 1; i++)
 	{
-		int cityX = rand() % WORLD_SIZE, cityY = rand() % WORLD_SIZE;
+		int cityX = rand() % (CITY_MAX - CITY_MIN) + CITY_MIN, 
+			cityY = rand() % (CITY_MAX - CITY_MIN) + CITY_MIN;
 
 		bool foundValidLocation = false;
 		while(!foundValidLocation)

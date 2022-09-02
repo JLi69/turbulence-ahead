@@ -4,6 +4,12 @@
 #include <iostream>
 #include "GL/gl-func.h"
 
+int App::digits(int num)
+{
+	if(num == 0) return 1;
+	return (num > 0) ? ((int)log10(num) + 1) : ((int)log10(-num) + 1);
+}
+
 void App::display(float timePassed)
 {		
 	mDefaultShader.use();
@@ -46,7 +52,7 @@ void App::display(float timePassed)
 		glUniform1f(mDefaultShader.getUniformLocation("uDarkness"), 1.0f);	
 		glUniform1f(mDefaultShader.getUniformLocation("uTexFrac"), 1.0f);
 		glUniform2f(mDefaultShader.getUniformLocation("uTexOffset"), 0.0f, 0.0f);
-		glUniform2f(mDefaultShader.getUniformLocation("uTexSize"), 128.0f, 72.0f);
+		glUniform2f(mDefaultShader.getUniformLocation("uTexSize"), 256.0f, 144.0f);
 		glUniform1f(mDefaultShader.getUniformLocation("uRotation"), 0.0f);
 		glUniform2f(mDefaultShader.getUniformLocation("uScale"), 960.0f, 540.0f);
 		glUniform2f(mDefaultShader.getUniformLocation("uOffset"), 0.0f, 0.0f);
@@ -63,7 +69,7 @@ void App::display(float timePassed)
 	
 	//Draw the world centered on the player		
 	glUniform1f(mDefaultShader.getUniformLocation("uRotation"), 0.0f);
-	mLevel.displayWorld(mPlayer.getX(),
+	mLevel->displayWorld(mPlayer.getX(),
 						mPlayer.getY(),
 						mDefaultShader,
 						timePassed);
@@ -81,7 +87,27 @@ void App::display(float timePassed)
 	glUniform2f(mDefaultShader.getUniformLocation("uScale"), 96.0f, 96.0f);
 	for(auto cloud : mClouds)
 		cloud.draw(mDefaultShader, mPlayer.getX(), mPlayer.getY());	
-	
+
+	//Raindrop effect
+	if(mWeather >= RAIN)
+	{
+		static std::pair<float, float> offsets[] = 
+		{
+			{ 2050.0f, 1000.0f },
+			{ 2090.0f, 1100.0f },	
+		};
+
+		mRainShader.use();
+		glUniform2f(mRainShader.getUniformLocation("uScreenDimensions"), winWidth, winHeight);
+		glUniform1f(mRainShader.getUniformLocation("uTime"), mTotalTime - floorf(mTotalTime));
+		for(int i = 0; i < 2; i++)
+		{			
+			glUniform2f(mRainShader.getUniformLocation("uOffset"), offsets[i].first, offsets[i].second);
+			glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 2400);
+		}	
+		mDefaultShader.use();
+	}
+
 	glUniform1f(mDefaultShader.getUniformLocation("uDarkness"), 1.0f);	
 	//Speedometer
 	glUniform1f(mDefaultShader.getUniformLocation("uRotation"), 0.0f);
@@ -125,7 +151,7 @@ void App::display(float timePassed)
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
 	//Arrow to point to the next goal
-	std::pair<int, int> goal = mLevel.getCurrentGoal();
+	std::pair<int, int> goal = mLevel->getCurrentGoal();
 	glUniform2f(mDefaultShader.getUniformLocation("uScale"), 32.0f, 32.0f);
 	float angle = atan(((float)goal.second - mPlayer.getY()) / ((float)goal.first - mPlayer.getX()));
 
@@ -140,8 +166,66 @@ void App::display(float timePassed)
 	glUniform2f(mDefaultShader.getUniformLocation("uOffset"), 60.0f * cosf(angle), -60.0f * sinf(angle));
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
+	//Timer for speedrunning or something
+	int seconds = (int)floorf(mTotalTime - floorf(mTotalTime / 60.0f) * 60.0f),
+		minutes = (int)floorf(mTotalTime / 60.0f);
+	char* minuteNum = (char*)malloc(digits(minutes));
+	char* secondNum = (char*)malloc(digits(seconds));
+	sprintf(minuteNum, "%d", minutes);
+	sprintf(secondNum, "%d", seconds);
+
+	float x = winWidth / 2.0f - 30.0f, y = winHeight / 2.0f - 30.0f;
+	glUniform1f(mDefaultShader.getUniformLocation("uRotation"), 0.0f);
+	glUniform2f(mDefaultShader.getUniformLocation("uScale"), 32.0f, 32.0f);
+	for(int i = digits(seconds) - 1; i >= 0; i--)
+	{
+		glUniform2f(mDefaultShader.getUniformLocation("uTexOffset"), 1.0f / 16.0f * (secondNum[i] - '0'),  9.0f / 16.0f);
+		glUniform2f(mDefaultShader.getUniformLocation("uOffset"), x, y);
+		x -= 32.0f;
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
+
+	//Extra zero if seconds is single digit
+	if(digits(seconds) == 1)
+	{
+		glUniform2f(mDefaultShader.getUniformLocation("uTexOffset"), 0.0f,  9.0f / 16.0f);
+		glUniform2f(mDefaultShader.getUniformLocation("uOffset"), x, y);
+		x -= 32.0f;
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
+
+	//Colon
+	glUniform2f(mDefaultShader.getUniformLocation("uTexOffset"), 10.0f / 16.0f,  9.0f / 16.0f);
+	glUniform2f(mDefaultShader.getUniformLocation("uOffset"), x, y);
+	x -= 32.0f;
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	//Minutes
+	for(int i = digits(minutes) - 1; i >= 0; i--)
+	{
+		glUniform2f(mDefaultShader.getUniformLocation("uTexOffset"), 1.0f / 16.0f * (minuteNum[i] - '0'),  9.0f / 16.0f);
+		glUniform2f(mDefaultShader.getUniformLocation("uOffset"), x, y);
+		x -= 32.0f;
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
+
+	//Deallocate the minute and second timers
+	free(minuteNum);
+	free(secondNum);
+
 	//Message box
-	if(mPaused)
+	if(mState == GAME_OVER)
+	{
+		activateTexture(mMessageTextures[LOSE], GL_TEXTURE0);
+		glUniform2f(mDefaultShader.getUniformLocation("uTexSize"), 128.0f, 32.0f);
+		glUniform1f(mDefaultShader.getUniformLocation("uTexFrac"), 1.0f);
+		glUniform1f(mDefaultShader.getUniformLocation("uRotation"), 0.0f);
+		glUniform2f(mDefaultShader.getUniformLocation("uScale"), 640.0f, 160.0f);
+		glUniform2f(mDefaultShader.getUniformLocation("uTexOffset"), 0.0f, 0.0f);
+		glUniform2f(mDefaultShader.getUniformLocation("uOffset"), 0.0f, 0.0f);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
+	else if(mPaused)
 	{		
 		activateTexture(mMessageTextures[mMessageType], GL_TEXTURE0);
 		glUniform2f(mDefaultShader.getUniformLocation("uTexSize"), 128.0f, 32.0f);

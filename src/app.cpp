@@ -5,14 +5,12 @@
 #include <time.h>
 #include "world/world.h"
 #include "GL/gl-func.h"
-#include <chrono>
+#include <chrono> 
+#include "Audio/music.h"
 
 App::App()
 { 
-	mLevel = World(time(NULL));
-	//Create the clouds	
-	for(int i = 0; i < 40; i++)
-		mClouds.push_back(Cloud((float)rand() / (float)RAND_MAX * 100.0f + 450.0f, (float)rand() / (float)RAND_MAX * 100.0f + 450.0f, 0.5f, NORMAL)); 	
+	 	
 }
 
 App::~App()
@@ -53,17 +51,23 @@ void App::init()
 	}
 
 	mDefaultShader = Shader("res/shaders/vert.glsl", "res/shaders/frag.glsl");
+	mRainShader = Shader("res/shaders/raindrop-vert.glsl", "res/shaders/raindrop-frag.glsl");	
 	mSquare = createSquare();
 	mTexture = loadTexture("res/textures/textures.png");
 	mTitle = loadTexture("res/textures/title.png");
 	mCredits = loadTexture("res/textures/credits.png");
-
+	
+	mMessageTextures[NONE] = loadTexture("res/textures/visited0.png");
 	mMessageTextures[VISITED1] = loadTexture("res/textures/visited1.png");
 	mMessageTextures[VISITED2] = loadTexture("res/textures/visited2.png");
 	mMessageTextures[VISITED3] = loadTexture("res/textures/visited3.png");
 	mMessageTextures[VISITED4] = loadTexture("res/textures/visited4.png");
 	mMessageTextures[VISITED5] = loadTexture("res/textures/visited5.png");
 	mMessageTextures[WIN] = loadTexture("res/textures/visited6.png");
+	mMessageTextures[LOSE] = loadTexture("res/textures/gameover.png");
+
+	mSoundEffects->addSoundEffect("res/audio/crash.wav");	
+	mSoundEffects->addSoundEffect("res/audio/select.wav");
 }
 
 void App::run()
@@ -75,11 +79,13 @@ void App::run()
 	//Listen for events
 	event->setCallback(mWindow);
 
+	MusicBuffer* background = new MusicBuffer("res/audio/wind.wav");	
+	ALint backgroundALStatus;
+
 	std::chrono::time_point<std::chrono::system_clock> start = 
 		std::chrono::system_clock::now();
 	std::chrono::time_point<std::chrono::system_clock> end;
 	float timePassed = 0.0f;
-	glClearColor(0.0f, 0.67f, 1.0f, 1.0f);
 	while(!glfwWindowShouldClose(mWindow))
 	{
 		display(timePassed);	
@@ -91,7 +97,29 @@ void App::run()
 		end = std::chrono::system_clock::now();
 		std::chrono::duration<float> frameDuration =  end - start;
 		timePassed = frameDuration.count();
-		start = std::chrono::system_clock::now();	
+		start = std::chrono::system_clock::now();
+
+		//Handle background sound
+		alGetSourcei(background->getSource(), AL_SOURCE_STATE, &backgroundALStatus);	
+		if(backgroundALStatus != AL_PLAYING && mState == GAME)
+		{
+			if(background != nullptr)
+			{
+				delete background;
+				if(mWeather <= CLOUD)
+					background = new MusicBuffer("res/audio/wind.wav");
+				else if(mWeather >= RAIN)
+					background = new MusicBuffer("res/audio/rain_thunder_loop.wav");
+			}
+			background->Play();
+		}
+		else if(mState != GAME)
+		{
+			delete background;
+			background = new MusicBuffer("res/audio/wind.wav");
+		}
+		else if(backgroundALStatus == AL_PLAYING)
+			background->UpdateBufferStream();
 	}
 	glfwTerminate();
 

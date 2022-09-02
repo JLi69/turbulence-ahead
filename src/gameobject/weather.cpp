@@ -19,6 +19,11 @@ float Cloud::getSpeed()
 	return mSpeed;
 }
 
+CloudType Cloud::getType()
+{
+	return mType;
+}
+
 void Cloud::setSpeed(float speed)
 {
 	mSpeed = speed;
@@ -40,11 +45,6 @@ Cloud::Cloud(float x, float y, float speed, CloudType type)
 void Cloud::move(float timePassed)
 {
 	mX += mSpeed * timePassed;
-	if(mX > 1000.0f)
-	{
-		mX = 0.0f;
-		mY = (float)rand() / (float)RAND_MAX * 1000.0f;	
-	}
 
 	//Update animation time
 	mAnimationTime += timePassed;
@@ -137,9 +137,9 @@ void Tornado::draw(Shader shader, float cameraX, float cameraY)
 		return;
 
 	if(mAnimationTime < 0.5f)
-		glUniform2f(shader.getUniformLocation("uTexOffset"), 4.0f / 16.0f, 12.0f / 16.0f);
+		glUniform2f(shader.getUniformLocation("uTexOffset"), 4.0f / 16.0f + 1.0f / 16.0f * floorf(mAnimationTime * 8.0f), 12.0f / 16.0f);
 	else if(mAnimationTime >= 0.5f)
-		glUniform2f(shader.getUniformLocation("uTexOffset"), 5.0f / 16.0f, 12.0f / 16.0f);
+		glUniform2f(shader.getUniformLocation("uTexOffset"), 4.0f / 16.0f + 1.0f / 16.0f * floorf(8.0f - mAnimationTime * 8.0f), 12.0f / 16.0f);
 
 	glUniform2f(shader.getUniformLocation("uOffset"), (mX - cameraX) * TILE_SIZE,
 													  (mY - cameraY) * TILE_SIZE);	

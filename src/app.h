@@ -7,6 +7,9 @@
 #include "GL/shader.h"
 #include "gameobject/plane.h"
 #include "gameobject/weather.h"
+#include "Audio/sound-dev.h"
+#include "Audio/sound-buff.h"
+#include "Audio/sound-src.h"
 
 #define NUM_OF_MESSAGES 8
 
@@ -15,15 +18,15 @@
 class App
 {
 	enum Message
-	{
+	{	
+		NONE,
 		VISITED1,
 		VISITED2,
 		VISITED3,
 		VISITED4,
 		VISITED5,
 		WIN,
-		LOSE,
-		NONE
+		LOSE
 	};	
 
 	enum Weather
@@ -38,16 +41,18 @@ class App
 	{
 		MENU,
 		CREDITS,
-		GAME
+		GAME,
+		GAME_OVER
 	};
 
 	GLFWwindow* mWindow;
-	World mLevel;	
+	World* mLevel = nullptr;	
 	EventHandler* event = EventHandler::get();
 	GameState mState = MENU;
 	int mSelected = 0;
 
-	Shader mDefaultShader;
+	Shader mDefaultShader,
+		   mRainShader;
 	GLBufferObj* mSquare;
 	unsigned int mTexture,
 				 mTitle,
@@ -61,12 +66,18 @@ class App
 
 	float mTotalTime = 0.0f;
 
+	//Sound
+	SoundDev* mSoundDev = SoundDev::get();
+	SoundBuffer* mSoundEffects = SoundBuffer::get();
+	SoundSource mSrc = SoundSource();
+	
 	//Player plane
-	Plane mPlayer = Plane(500.0f, 500.0f, 0.0f);
+	Plane mPlayer = Plane(WORLD_SIZE / 2.0f, WORLD_SIZE / 2.0f, 0.0f);
 	//Weather objects
 	std::vector<Cloud> mClouds;
 	std::vector<Tornado> mTorandoes;
 
+	static int digits(int num);
 	void display(float timePassed);
 	void update(float timePassed);
 	

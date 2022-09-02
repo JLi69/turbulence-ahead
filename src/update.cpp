@@ -5,12 +5,28 @@
 void App::update(float timePassed)
 {
 	static bool sPlayerHitTornado = false;
+	static unsigned int seed = time(NULL);
+
+	if(mState != GAME && mState != GAME_OVER && mLevel != nullptr)
+	{
+		delete mLevel;	
+		mLevel = nullptr;
+	}
 
 	//On menu
 	if(mState == MENU)
 	{
-		if(event->keyTapped(GLFW_KEY_UP)) mSelected--;
-		else if(event->keyTapped(GLFW_KEY_DOWN)) mSelected++;
+		if(event->keyTapped(GLFW_KEY_UP)) 
+		{	
+			mSelected--;
+			SoundSource src;
+			mSrc.Play(mSoundEffects->getSoundId("res/audio/select.wav"));	
+		}	
+		else if(event->keyTapped(GLFW_KEY_DOWN)) 
+		{
+			mSelected++;
+			mSrc.Play(mSoundEffects->getSoundId("res/audio/select.wav"));	
+		}	
 		mSelected %= 2;
 		if(mSelected < 0)
 			mSelected = 1;
@@ -19,7 +35,23 @@ void App::update(float timePassed)
 		if(event->keyTapped(GLFW_KEY_ENTER) || event->keyTapped(GLFW_KEY_SPACE))
 		{
 			if(mSelected == 0)
+			{
 				mState = GAME;
+				//Reset everything
+				mLevel = new World(seed += 13);
+				mMessageType = NONE;	
+				//Reset the weather
+				mWeather = SUN;
+				mTorandoes.clear();	
+				//Create the clouds	
+				mClouds.clear();
+				for(int i = 0; i < 40; i++)
+					mClouds.push_back(Cloud((float)rand() / (float)RAND_MAX * 100.0f + WORLD_SIZE / 2.0f - 50.0f, (float)rand() / (float)RAND_MAX * 100.0f + WORLD_SIZE / 2.0f - 50.0f, 0.5f, NORMAL));		
+				mPlayer = Plane(WORLD_SIZE / 2.0f, WORLD_SIZE / 2.0f, 0.0f);
+				mPlayer.refuel();
+				mPaused = true;	
+				mTotalTime = 0.0f;	
+			}
 			else if(mSelected == 1)
 				mState = CREDITS;
 		}
@@ -31,15 +63,22 @@ void App::update(float timePassed)
 		if(event->keyTapped(GLFW_KEY_ESCAPE)) mState = MENU;
 		return;	
 	}
+	//Game over
+	else if(mState == GAME_OVER)
+	{	
+		if(event->keyTapped(GLFW_KEY_ESCAPE) || event->keyTapped(GLFW_KEY_SPACE)) mState = MENU;
+		return;
+	}
 
-	if(event->keyPressed(GLFW_KEY_SPACE))
+	if(event->keyTapped(GLFW_KEY_SPACE))
 	{
 		if(mMessageType == WIN)
-		{
-			//TODO: put player back on main menu
-			exit(0);
-		}
+			mState = MENU;	
 		mPaused = false;
+	}
+	else if(event->keyTapped(GLFW_KEY_ESCAPE))
+	{
+		mPaused = !mPaused;
 	}
 
 	if(mPaused)
@@ -64,20 +103,20 @@ void App::update(float timePassed)
 	mPlayer.move(timePassed);
 
 	//Check if the player is at the goal
-	if((floorf(mPlayer.getX()) == mLevel.getCurrentGoal().first || ceilf(mPlayer.getX()) == mLevel.getCurrentGoal().first) &&
-	   (floorf(mPlayer.getY()) == mLevel.getCurrentGoal().second || ceilf(mPlayer.getY()) == mLevel.getCurrentGoal().second))
+	if((floorf(mPlayer.getX()) == mLevel->getCurrentGoal().first || ceilf(mPlayer.getX()) == mLevel->getCurrentGoal().first) &&
+	   (floorf(mPlayer.getY()) == mLevel->getCurrentGoal().second || ceilf(mPlayer.getY()) == mLevel->getCurrentGoal().second))
 	{	
 		if(mMessageType == NONE)
 			mMessageType = VISITED1;
 		else
 			mMessageType = (Message)((int)mMessageType + 1);
-		mLevel.updateGoal();
+		mLevel->updateGoal();
 		mPaused = true;
 
 		//Refuel the plane
 		mPlayer.refuel();
 		mPlayer.updateWindSpeed();
-		mPlayer.updateWindAngle(mLevel.getCurrentGoal().first, mLevel.getCurrentGoal().second);	
+		mPlayer.updateWindAngle(mLevel->getCurrentGoal().first, mLevel->getCurrentGoal().second);	
 
 		if(mWeather < STORM)
 			mWeather = (Weather)((int)mWeather + 1);
@@ -135,6 +174,12 @@ void App::update(float timePassed)
 			cloud.setCloudPos(dist * cosf(angle) + mPlayer.getX(),
 							  dist * sinf(angle) + mPlayer.getY()); 
 		}	
+		//Crashed into storm cloud?
+		if((cloud.getX() - mPlayer.getX()) * (cloud.getX() - mPlayer.getX()) + (cloud.getY() - mPlayer.getY()) * (cloud.getY() - mPlayer.getY())  <= 0.7f * 0.7f &&
+			cloud.getType() == STORM_CLOUD)
+		{
+			mState = GAME_OVER;
+		}
 		cloud.move(timePassed);	
 	}
 
@@ -164,4 +209,11 @@ void App::update(float timePassed)
 	}
 
 	mTotalTime += timePassed;
+
+	//Out of fuel?
+	if(mPlayer.getFuel() <= 0.0f)
+		mState = GAME_OVER;
+
+	if(mState == GAME_OVER)
+		mSrc.Play(mSoundEffects->getSoundId("res/audio/crash.wav"));
 }

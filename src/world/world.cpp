@@ -7,6 +7,13 @@ World::World(unsigned int seed)
 	generateWorld();
 }
 
+World::~World()
+{
+	for(int i = 0; i < WORLD_SIZE; i++)
+		delete mTiles[i];
+	delete mTiles;
+}
+
 World::World()
 { }
 

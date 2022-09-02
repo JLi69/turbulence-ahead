@@ -29,7 +29,10 @@ void EventHandler::handleKeyInput(GLFWwindow *win, int key, int scancode, int ac
 		mKeyTapped[key] = true;	
 	}	
 	else if(action == GLFW_RELEASE)
-		mKeyPressed[key] = false;
+	{		
+		mKeyPressed[key] = false;	
+		mKeyTapped[key] = false;
+	}
 }
 
 bool EventHandler::keyPressed(int key)

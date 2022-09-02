@@ -23,6 +23,7 @@ public:
 	void setCloudType(CloudType type);
 	void setCloudPos(float x, float y);
 	Cloud(float x, float y, float speed, CloudType type);
+	CloudType getType();
 
 	void move(float timePassed);
 	void draw(Shader shader, float cameraX, float cameraY);
