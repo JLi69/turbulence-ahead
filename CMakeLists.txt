@@ -2,9 +2,17 @@ cmake_minimum_required(VERSION 3.11)
 
 link_directories(${CMAKE_BINARY_DIR})
 if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
-	set(CMAKE_CXX_FLAGS "-O2 -static-libgcc -static-libstdc++ -mwindows")	
+	set(CMAKE_CXX_FLAGS "-O2 -static-libgcc -static-libstdc++ -mwindows -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,-Bdynamic,--no-whole-archive")	
+	add_custom_target(
+		lib_glad
+		COMMAND cd lib/glad && mingw32-make
+	)
 else()
 	set(CMAKE_CXX_FLAGS "-O2 -static-libgcc -static-libstdc++")
+	add_custom_target(
+		lib_glad
+		COMMAND cd lib/glad && make
+	)
 endif()
 
 #project name
@@ -19,10 +27,6 @@ add_custom_target(
 )
 
 add_subdirectory(lib/glad)
-add_custom_target(
-	lib_glad
-	COMMAND cd lib/glad && make
-)
 
 find_package(OpenGL REQUIRED)
 

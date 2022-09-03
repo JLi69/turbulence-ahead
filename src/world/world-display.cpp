@@ -50,7 +50,22 @@ void World::displayWorld(float cameraX, float cameraY, Shader shader, float time
 				case CITY:
 					glUniform2f(shader.getUniformLocation("uTexOffset"),
 								5.0f / 16.0f, 15.0f / 16.0f);
-					break;	
+					break;
+				case ROAD_VERTICAL:
+					glUniform2f(shader.getUniformLocation("uTexOffset"),
+								6.0f / 16.0f, 15.0f / 16.0f);
+					break;
+				case ROAD_HORIZONTAL:
+					glUniform2f(shader.getUniformLocation("uTexOffset"),
+								7.0f / 16.0f, 15.0f / 16.0f);
+					break;
+				case BUILDING1:
+				case BUILDING2:
+				case BUILDING3:
+				case BUILDING4:	
+					glUniform2f(shader.getUniformLocation("uTexOffset"),
+								8.0f / 16.0f + 1.0f / 16.0f * (mTiles[i][j] - BUILDING1), 15.0f / 16.0f);
+					break;
 				default:
 					break;
 				}

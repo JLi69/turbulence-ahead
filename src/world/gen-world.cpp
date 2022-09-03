@@ -100,24 +100,52 @@ void World::generateWorld()
 			else if(value < 1.0f)
 				mTiles[i][j] = LAND;
 		}
-	}
-
-	//Randomly place trees around the world
-	for(int i = 0; i < WORLD_SIZE; i++)
-		for(int j = 0; j < WORLD_SIZE; j++)
-			if(rand() % 32 == 0 && mTiles[i][j] == LAND)
-				mTiles[i][j] = TREE;
+	}	
 
 	//Place the cities
 	//Starting city
 	mTiles[WORLD_SIZE / 2][WORLD_SIZE / 2] = CITY;
 	//Clear out the region near the city
-	for(int i = WORLD_SIZE / 2 - 4; i <= WORLD_SIZE / 2 + 4; i++)	
-		for(int j = WORLD_SIZE / 2 - 4; j <= WORLD_SIZE / 2 + 4; j++)
-			if((i - WORLD_SIZE / 2) * (i - WORLD_SIZE / 2) + (j - WORLD_SIZE / 2) * (j - WORLD_SIZE / 2) <= 16 &&
+	for(int i = WORLD_SIZE / 2 - 8; i <= WORLD_SIZE / 2 + 8; i++)	
+		for(int j = WORLD_SIZE / 2 - 8; j <= WORLD_SIZE / 2 + 8; j++)
+			if((i - WORLD_SIZE / 2) * (i - WORLD_SIZE / 2) + (j - WORLD_SIZE / 2) * (j - WORLD_SIZE / 2) < 64 &&
 				mTiles[i][j] != CITY)
-				mTiles[i][j] = LAND;	
-	
+				mTiles[i][j] = LAND;
+
+	//Place the roads
+	for(int i = 0; i < 5; i++)
+	{
+		if(rand() % 2 == 0 && i != 2) continue;
+
+		for(int j = WORLD_SIZE / 2 - 4; j <= WORLD_SIZE / 2 + 4; j++)
+		{
+			if(mTiles[j][WORLD_SIZE / 2 - 4 + i * 2] == CITY) continue;	
+			mTiles[j][WORLD_SIZE / 2 - 4 + i * 2] = ROAD_VERTICAL;	
+		}	
+	}
+
+	for(int i = 0; i < 5; i++)
+	{	
+		if(rand() % 2 == 0 && i != 2) continue;
+		
+		for(int j = WORLD_SIZE / 2 - 4; j <= WORLD_SIZE / 2 + 4; j++)
+		{
+			if(mTiles[WORLD_SIZE / 2 - 4 + i * 2][j] == CITY) continue;	
+			mTiles[WORLD_SIZE / 2 - 4 + i * 2][j] = ROAD_HORIZONTAL;	
+		}	
+	}
+
+	//Place the buildings
+	for(int i = WORLD_SIZE / 2 - 5; i <= WORLD_SIZE / 2 + 5; i++)
+	{
+		for(int j = WORLD_SIZE / 2 - 5; j <= WORLD_SIZE / 2 + 5; j++)
+		{
+			if(mTiles[i][j] == CITY || mTiles[i][j] == ROAD_VERTICAL || mTiles[i][j] == ROAD_HORIZONTAL) continue;	
+			if(rand() % 3 == 0) continue;	
+			mTiles[i][j] = (Tile)(rand() % (BUILDING4 - BUILDING1 + 1) + BUILDING1);	
+		}	
+	}
+
 	std::vector<std::pair<int, int>> cityLocations;
 	cityLocations.push_back({ WORLD_SIZE / 2, WORLD_SIZE / 2 });
 
@@ -134,7 +162,7 @@ void World::generateWorld()
 			//Make sure the city isn't too close to other cities	
 			for(auto city : cityLocations)
 			{	
-				if(abs(city.first - cityX) <= 4 && abs(city.second - cityY) <= 4)
+				if(abs(city.first - cityX) <= 8 && abs(city.second - cityY) <= 8)
 				{	
 					foundValidLocation = false;
 					cityX = rand() % WORLD_SIZE;
@@ -146,17 +174,58 @@ void World::generateWorld()
 		mCities.push_back({ cityX, cityY });	
 		cityLocations.push_back({ cityX, cityY });
 
-		mTiles[cityY][cityX] = CITY;	
-		for(int j = cityX - 4; j <= cityX + 4; j++)	
+		mTiles[cityY][cityX] = CITY;
+		//Clear out the area around the city
+		for(int j = cityX - 8; j <= cityX + 8; j++)	
 		{	
-			for(int k = cityY - 4; k <= cityY + 4; k++)
+			for(int k = cityY - 8; k <= cityY + 8; k++)
 			{
 				if(j < 0 || j >= WORLD_SIZE || k < 0 || k >= WORLD_SIZE)
 					continue;
-				if((j - cityX) * (j - cityX) + (k - cityY) * (k - cityY) <= 16 &&
+				if((j - cityX) * (j - cityX) + (k - cityY) * (k - cityY) < 64 &&
 					mTiles[k][j] != CITY)
 					mTiles[k][j] = LAND;
 			}
 		}
+
+		//Place the roads
+		for(int j = 0; j < 5; j++)
+		{
+			if(rand() % 2 == 0 && j != 2) continue;
+
+			for(int k = cityY - 4; k <= cityY + 4; k++)
+			{
+				if(mTiles[k][cityX - 4 + j * 2] == CITY) continue;	
+				mTiles[k][cityX - 4 + j * 2] = ROAD_VERTICAL;	
+			}	
+		}
+	
+		for(int j = 0; j < 5; j ++)
+		{	
+			if(rand() % 2 == 0 && j != 2) continue;
+			
+			for(int k = cityX - 4; k <= cityX + 4; k++)
+			{
+				if(mTiles[cityY - 4 + j * 2][k] == CITY) continue;	
+				mTiles[cityY - 4 + j * 2][k] = ROAD_HORIZONTAL;	
+			}	
+		}
+	
+		//Place the buildings
+		for(int j = cityX - 5; j <= cityX + 5; j++)
+		{
+			for(int k = cityY - 5; k <= cityY + 5; k++)
+			{
+				if(mTiles[k][j] == CITY || mTiles[k][j] == ROAD_VERTICAL || mTiles[k][j] == ROAD_HORIZONTAL) continue;	
+				if(rand() % 3 == 0) continue;	
+				mTiles[k][j] = (Tile)(rand() % (BUILDING4 - BUILDING1 + 1) + BUILDING1);	
+			}	
+		}
 	}
+
+	//Randomly place trees around the world
+	for(int i = 0; i < WORLD_SIZE; i++)
+		for(int j = 0; j < WORLD_SIZE; j++)
+			if(rand() % 32 == 0 && mTiles[i][j] == LAND)
+				mTiles[i][j] = TREE;
 }
