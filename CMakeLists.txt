@@ -43,4 +43,9 @@ add_executable(
 
 target_link_libraries(${BIN_NAME} glfw3)
 target_link_libraries(${BIN_NAME} SOIL2 OpenGL::GL)
-target_link_libraries(${BIN_NAME} openal sndfile)
+
+if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
+	target_link_libraries(${BIN_NAME} OpenAL32 sndfile)
+else()
+	target_link_libraries(${BIN_NAME} openal sndfile)
+endif()

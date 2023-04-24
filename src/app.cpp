@@ -41,6 +41,7 @@ void App::init()
 		exit(-1);
 	}
 	glfwMakeContextCurrent(mWindow);
+	glfwSwapInterval(1);	
 
 	//Initialize glad
 	if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
