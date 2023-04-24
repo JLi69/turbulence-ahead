@@ -6,7 +6,7 @@ link_directories(${CMAKE_BINARY_DIR})
 if(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
 	set(CMAKE_CXX_FLAGS "-O2 -static-libgcc -static-libstdc++ -mwindows -Wl,-Bstatic,--whole-archive -lwinpthread -Wl,-Bdynamic,--no-whole-archive")	
 else()
-	set(CMAKE_CXX_FLAGS "-O2 -static-libgcc -static-libstdc++")
+	set(CMAKE_CXX_FLAGS "-Wl,-rpath=${ORIGIN} -O2 -static-libgcc -static-libstdc++")
 endif()
 
 #project name
